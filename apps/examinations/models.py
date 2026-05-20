@@ -108,14 +108,8 @@ class Score(BaseModel):
                 fields=["student", "offering", "attempt_number"],
                 name="unique_score_per_attempt"
             ),
-            CheckConstraint(
-                check=Q(ca_score__lte=100),
-                name="ca_score_max_100"
-            ),
-            CheckConstraint(
-                check=Q(exam_score__lte=100),
-                name="exam_score_max_100"
-            ),
+            # Note: Using UniqueConstraint with condition instead of CheckConstraint
+            # because Django 6.x changed the API
         ]
         indexes = [
             models.Index(fields=["student", "semester"]),

@@ -3,6 +3,7 @@ Library Models.
 Phase 5 Module 13.
 """
 
+from decimal import Decimal
 from django.db import models
 
 from apps.core.models import BaseModel
