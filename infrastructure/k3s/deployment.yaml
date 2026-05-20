@@ -1,0 +1,194 @@
+---
+# K3s deployment manifest for Nigerian University MIS
+# Production-grade Kubernetes configuration
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: university-mis
+  labels:
+    app: university-mis
+    environment: production
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: university-mis-config
+  namespace: university-mis
+data:
+  DJANGO_SETTINGS_MODULE: "config.settings.production"
+  REDIS_URL: "redis://redis:6379/0"
+  DB_HOST: "postgres.university-mis.svc.cluster.local"
+  DB_PORT: "5432"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: university-mis-secrets
+  namespace: university-mis
+type: Opaque
+stringData:
+  DB_NAME: "university_mis"
+  DB_USER: "postgres"
+  DB_PASSWORD: "changeme"
+  JWT_SECRET_KEY: "changeme-jwt-secret"
+  MINIO_ACCESS_KEY: "minioadmin"
+  MINIO_SECRET_KEY: "minioadmin"
+  MINIO_BUCKET_NAME: "university-mis"
+  MINIO_ENDPOINT: "http://minio:9000"
+  SENTRY_DSN: ""
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: university-mis
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: web
+        image: university-mis:latest
+        command: ["uvicorn", "config.asgi:application", "--host", "0.0.0.0", "--port", "8000"]
+        ports:
+        - containerPort: 8000
+        envFrom:
+        - configMapRef:
+            name: university-mis-config
+        - secretRef:
+            name: university-mis-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web
+  namespace: university-mis
+spec:
+  selector:
+    app: web
+  ports:
+  - port: 80
+    targetPort: 8000
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-worker
+  namespace: university-mis
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: celery-worker
+  template:
+    metadata:
+      labels:
+        app: celery-worker
+    spec:
+      containers:
+      - name: celery
+        image: university-mis:latest
+        command: ["celery", "-A", "config.celery", "worker", "-l", "INFO", "-Q", "default,payments,jamb,notifications"]
+        envFrom:
+        - configMapRef:
+            name: university-mis-config
+        - secretRef:
+            name: university-mis-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: celery-beat
+  namespace: university-mis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: celery-beat
+  template:
+    metadata:
+      labels:
+        app: celery-beat
+    spec:
+      containers:
+      - name: celery-beat
+        image: university-mis:latest
+        command: ["celery", "-A", "config.celery", "beat", "-l", "INFO", "--scheduler", "django_celery_beat.schedulers:DatabaseScheduler"]
+        envFrom:
+        - configMapRef:
+            name: university-mis-config
+        - secretRef:
+            name: university-mis-secrets
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flower
+  namespace: university-mis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flower
+  template:
+    metadata:
+      labels:
+        app: flower
+    spec:
+      containers:
+      - name: flower
+        image: university-mis:latest
+        command: ["celery", "-A", "config.celery", "flower", "--port=5555"]
+        ports:
+        - containerPort: 5555
+        envFrom:
+        - configMapRef:
+            name: university-mis-config
+        - secretRef:
+            name: university-mis-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flower
+  namespace: university-mis
+spec:
+  selector:
+    app: flower
+  ports:
+  - port: 5555
+    targetPort: 5555
+  type: ClusterIP

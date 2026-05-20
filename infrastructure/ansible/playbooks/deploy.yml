@@ -1,0 +1,107 @@
+---
+# Ansible playbook to deploy University MIS to K3s
+- name: Deploy University MIS to K3s
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars:
+    app_name: university-mis
+    namespace: university-mis
+    image_tag: latest
+    
+  tasks:
+    - name: Create namespace
+      k8s:
+        name: "{{ namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Create secrets
+      k8s:
+        state: present
+        namespace: "{{ namespace }}"
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "{{ app_name }}-secrets"
+          type: Opaque
+          stringData:
+            DB_NAME: "{{ lookup('env', 'DB_NAME') | default('university_mis') }}"
+            DB_USER: "{{ lookup('env', 'DB_USER') | default('postgres') }}"
+            DB_PASSWORD: "{{ lookup('env', 'DB_PASSWORD') }}"
+            JWT_SECRET_KEY: "{{ lookup('env', 'JWT_SECRET_KEY') }}"
+            MINIO_ACCESS_KEY: "{{ lookup('env', 'MINIO_ACCESS_KEY') | default('minioadmin') }}"
+            MINIO_SECRET_KEY: "{{ lookup('env', 'MINIO_SECRET_KEY') | default('minioadmin') }}"
+            MINIO_BUCKET_NAME: "{{ lookup('env', 'MINIO_BUCKET_NAME') | default('university-mis') }}"
+            MINIO_ENDPOINT: "{{ lookup('env', 'MINIO_ENDPOINT') | default('http://minio:9000') }}"
+            SENTRY_DSN: "{{ lookup('env', 'SENTRY_DSN') | default('') }}"
+
+    - name: Create configmap
+      k8s:
+        state: present
+        namespace: "{{ namespace }}"
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: "{{ app_name }}-config"
+          data:
+            DJANGO_SETTINGS_MODULE: "config.settings.production"
+            REDIS_URL: "redis://redis:6379/0"
+            DB_HOST: "postgres.{{ namespace }}.svc.cluster.local"
+            DB_PORT: "5432"
+
+    - name: Apply database manifests
+      k8s:
+        state: present
+        namespace: "{{ namespace }}"
+        src: "../k3s/database.yaml"
+
+    - name: Apply web deployment
+      k8s:
+        state: present
+        namespace: "{{ namespace }}"
+        src: "../k3s/deployment.yaml"
+
+    - name: Apply ingress
+      k8s:
+        state: present
+        namespace: "{{ namespace }}"
+        src: "../k3s/ingress.yaml"
+
+    - name: Wait for web deployment
+      k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: web
+        namespace: "{{ namespace }}"
+      register: web_deployment
+      until: web_deployment.resources[0].status.readyReplicas >= 2
+      retries: 30
+      delay: 10
+
+    - name: Run migrations
+      k8s:
+        state: present
+        namespace: "{{ namespace }}"
+        definition:
+          apiVersion: batch/v1
+          kind: Job
+          metadata:
+            name: migrate
+          spec:
+            ttlSecondsAfterFinished: 300
+            template:
+              spec:
+                restartPolicy: OnFailure
+                containers:
+                - name: migrate
+                  image: "{{ app_name }}:{{ image_tag }}"
+                  command: ["python", "manage.py", "migrate", "--noinput"]
+                  envFrom:
+                  - configMapRef:
+                      name: "{{ app_name }}-config"
+                  - secretRef:
+                      name: "{{ app_name }}-secrets"

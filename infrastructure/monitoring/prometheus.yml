@@ -1,0 +1,89 @@
+# Prometheus configuration for University MIS
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'university-mis'
+    environment: 'production'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - '/etc/prometheus/rules/*.yml'
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Django application metrics
+  - job_name: 'django'
+    metrics_path: '/metrics/'
+    static_configs:
+      - targets: ['web:8000']
+    scrape_interval: 30s
+
+  # Celery metrics
+  - job_name: 'celery'
+    metrics_path: '/celery/metrics'
+    static_configs:
+      - targets: ['flower:5555']
+    scrape_interval: 30s
+
+  # PostgreSQL metrics (via postgres_exporter)
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Redis metrics (via redis_exporter)
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+
+  # Node exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # Nginx ingress metrics
+  - job_name: 'nginx-ingress'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['nginx-ingress-controller:10254']
+
+  # MinIO metrics
+  - job_name: 'minio'
+    metrics_path: '/minio/v2/monitoring/bucket-metrics'
+    static_configs:
+      - targets: ['minio:9000']
+    scrape_interval: 60s
+
+# Recording rules for common queries
+record_rules:
+  groups:
+    - name: django_requests
+      interval: 30s
+      rules:
+        - record: django:requests_per_second
+          expr: rate(django_http_requests_total[5m])
+        - record: django:response_time_p95
+          expr: histogram_quantile(0.95, rate(django_http_request_duration_seconds_bucket[5m]))
+
+    - name: celery_tasks
+      interval: 30s
+      rules:
+        - record: celery:tasks_pending
+          expr: celery_tasks_pending
+        - record: celery:task_duration_p95
+          expr: histogram_quantile(0.95, rate(celery_task_runtime_seconds_bucket[5m]))
+
+    - name: database_connections
+      interval: 30s
+      rules:
+        - record: postgres:connections_active
+          expr: pg_stat_database_numbackends / pg_settings_max_connections
