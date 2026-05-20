@@ -20,7 +20,7 @@
 - ✅ Ansible playbooks (deploy)
 
 **HIGH:**
-- User role is single-field only - multi-role not supported  
+- ✅ Multi-role support implemented (UserRoleAssignment)  
 - Cross-schema FK from tenant models to public User needs explicit handling
 - JAMB CAPS integration is skeleton only
 

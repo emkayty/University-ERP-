@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django_fsm',
     'apps.tenants',
     'apps.users',
+    'apps.core',
 ]
 
 DATABASES = {
