@@ -26,7 +26,7 @@
 
 **MEDIUM:**
 - ✅ Prometheus/Grafana configs added in repo
-- NDPA consent capture models not implemented
+- ✅ NDPA 2023 compliance models (DataProcessingActivity, ConsentRecord, DataBreach, DataRetentionPolicy)
 
 ---
 

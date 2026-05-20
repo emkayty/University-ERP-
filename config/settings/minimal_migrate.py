@@ -14,6 +14,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
+    'apps.compliance',
     'django.contrib.contenttypes',
     'django.contrib.auth',
     'apps.users',
