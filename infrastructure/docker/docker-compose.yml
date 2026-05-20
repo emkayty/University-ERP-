@@ -183,11 +183,14 @@ services:
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: umis_pgadmin
+    # Only run in development - use profiles: ["dev"]
+    profiles:
+      - dev
     ports:
       - "8080:80"
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@umis.local
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:

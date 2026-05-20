@@ -64,6 +64,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     Run 'python manage.py makemigrations users' first whenever modifying.
     """
     email = models.EmailField(unique=True, db_index=True)
+    first_name = models.CharField(max_length=100, blank=True)  # Legal first name
+    last_name = models.CharField(max_length=100, blank=True)   # Legal last name
     phone = models.CharField(max_length=20, blank=True)
     role = models.CharField(max_length=30, choices=UserRole.choices, db_index=True)
     
@@ -116,12 +118,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         return f"{self.email} ({self.get_role_display()})"
 
     def get_full_name(self) -> str:
-        """Return the user's full name."""
+        """Return the user's full legal name."""
+        if self.first_name or self.last_name:
+            return f"{self.first_name} {self.last_name}".strip()
+        # Fallback for users without name data
         return self.email.split("@")[0].replace(".", " ").title()
 
     def get_short_name(self) -> str:
-        """Return the user's short name."""
-        return self.email.split("@")[0]
+        """Return the user's preferred name."""
+        return self.first_name or self.email.split("@")[0]
 
     @property
     def requires_2fa(self) -> bool:

@@ -51,12 +51,39 @@ def get_student_features(student_id: str) -> dict:
     try:
         student = Student.objects.get(id=student_id)
         
-        # 1. Attendance (would come from attendance module)
-        features["attendance_pct_current_semester"] = 85.0  # Placeholder
+        # 1. Attendance - read from attendance module or raise if not available
+        from apps.attendance.models import AttendanceRecord
+        attendance = AttendanceRecord.objects.filter(
+            student=student,
+            semester=current_semester
+        ).first()
         
-        # 2. CGPA slope (last 2 semesters)
-        # Would calculate from Result model
-        features["cgpa_slope_last_2_semesters"] = 0.1  # Placeholder
+        if attendance and attendance.attendance_rate is not None:
+            features["attendance_pct_current_semester"] = attendance.attendance_rate
+        else:
+            # Data not available - cannot make prediction
+            raise ValueError(
+                f"Attendance data not available for student {student_id} "
+                f"in semester {current_semester}"
+            )
+        
+        # 2. CGPA slope - calculate from result history or raise
+        from apps.examinations.models import Score
+        scores = Score.objects.filter(
+            student=student,
+            semester__session__lte=current_semester
+        ).order_by("-semester")[:4]
+        
+        if scores.count() >= 2:
+            # Calculate CGPA trend
+            gpas = [s.total_score / 100 * 5.0 for s in scores]
+            slope = (gpas[0] - gpas[-1]) / max(1, len(gpas) - 1)
+            features["cgpa_slope_last_2_semesters"] = slope
+        else:
+            raise ValueError(
+                f"Insufficient score history for student {student_id} "
+                f"(need at least 2 semesters)"
+            )
         
         # 3. Days since last fee payment
         last_payment = Invoice.objects.filter(

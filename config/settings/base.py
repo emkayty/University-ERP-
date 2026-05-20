@@ -310,7 +310,9 @@ CORS_ALLOW_CREDENTIALS = True
 # SIMPLE HISTORY
 # =============================================================================
 SIMPLE_HISTORY_HISTORY_CHANGE_REASON_USE_TEXT_FIELD = True
-SIMPLE_HISTORY_HISTORY_MODEL = "core.HistoricalRecord"
+# Use default HistoricalRecords model (auto-created by simple-history)
+# Keep default - historical records live in each model's table
+# SIMPLE_HISTORY_HISTORY_MODEL = "core.HistoricalRecord"  # Disabled - causes startup error
 
 # =============================================================================
 # SENTRY MONITORING
