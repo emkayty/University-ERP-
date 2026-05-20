@@ -40,8 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # Third-party apps
+    # "django_ninja",  # Disabled for migration - package import issue
     "rest_framework",
-    "django_ninja",
     "simple_history",
     "django_fsm",
     "django_filters",
