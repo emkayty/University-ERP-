@@ -44,7 +44,7 @@ urlpatterns = [
     # path("api/v1/specialized/", include("apps.specialized.urls")),
     
     # API v1 - Django Ninja (ML inference)
-    # path("api/ml/", include("apps.ml.urls")),
+    path("api/ml/", include("apps.ml.urls")),
     
     # WebSocket
     path("ws/", include("config.wschannels.routing")),
