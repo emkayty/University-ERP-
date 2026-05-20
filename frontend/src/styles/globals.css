@@ -1,0 +1,321 @@
+/**
+ * Nigerian University MIS Design System
+ * Mobile-first, Android-optimized
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors - University Blue */
+    --brand-primary: #1B4F72;
+    --brand-primary-dark: #153D5E;
+    --brand-primary-light: #2E6A9A;
+    
+    /* Secondary - Nigerian Green */
+    --brand-secondary: #117A65;
+    --brand-secondary-dark: #0D5F4F;
+    --brand-secondary-light: #1A9A84;
+    
+    /* Accent Colors */
+    --accent-gold: #D4AC0D;
+    --accent-amber: #E67E22;
+    
+    /* Surfaces */
+    --surface-0: #FFFFFF;
+    --surface-1: #F8FAFB;
+    --surface-2: #EEF2F7;
+    
+    /* Text */
+    --text-primary: #1A202C;
+    --text-secondary: #4A5568;
+    --text-muted: #718096;
+    
+    /* Semantic */
+    --success: #27AE60;
+    --danger: #C0392B;
+    --warning: #F39C12;
+    --info: #2980B9;
+    
+    /* Radius */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  }
+
+  * {
+    @apply border-surface-2;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-surface-0 text-text-primary font-sans antialiased;
+  }
+
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-bold text-text-primary;
+  }
+
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+
+  h4 {
+    @apply text-lg md:text-xl;
+  }
+
+  p {
+    @apply text-base leading-relaxed;
+  }
+
+  /* Links */
+  a {
+    @apply text-brand-primary hover:text-brand-primary-light transition-colors;
+  }
+
+  /* Focus states - accessibility */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-primary ring-offset-2;
+  }
+
+  /* Selection */
+  ::selection {
+    @apply bg-brand-primary text-white;
+  }
+}
+
+@layer components {
+  /* Button - minimum 48x48px tap target */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-3 min-h-[48px] text-sm font-medium rounded-md transition-all;
+    @apply focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply bg-brand-primary text-white hover:bg-brand-primary-dark;
+  }
+
+  .btn-secondary {
+    @apply bg-brand-secondary text-white hover:bg-brand-secondary-dark;
+  }
+
+  .btn-outline {
+    @apply border border-surface-2 bg-transparent hover:bg-surface-1;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent hover:bg-surface-1;
+  }
+
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-red-800;
+  }
+
+  /* Card */
+  .card {
+    @apply bg-white border border-surface-2 rounded-lg shadow-sm;
+  }
+
+  .card-header {
+    @apply px-6 py-4 border-b border-surface-2;
+  }
+
+  .card-body {
+    @apply px-6 py-4;
+  }
+
+  .card-footer {
+    @apply px-6 py-4 border-t border-surface-2;
+  }
+
+  /* Input - floating labels */
+  .input-group {
+    @apply relative;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 min-h-[48px] border border-surface-2 rounded-md bg-white;
+    @apply focus:border-brand-primary focus:ring-1 focus:ring-brand-primary;
+    @apply placeholder:text-text-muted;
+  }
+
+  .input-label {
+    @apply block text-sm font-medium text-text-secondary mb-1;
+  }
+
+  /* Status badges - ALWAYS include icon for accessibility */
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full;
+  }
+
+  .badge-success {
+    @apply bg-green-100 text-green-800;
+  }
+
+  .badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+
+  .badge-danger {
+    @apply bg-red-100 text-red-800;
+  }
+
+  .badge-info {
+    @apply bg-blue-100 text-blue-800;
+  }
+
+  /* Table */
+  .table {
+    @apply w-full text-left;
+  }
+
+  .table th {
+    @apply px-4 py-3 text-sm font-semibold text-text-secondary bg-surface-1;
+  }
+
+  .table td {
+    @apply px-4 py-3 text-sm border-b border-surface-2;
+  }
+
+  .table tbody tr:hover {
+    @apply bg-surface-1;
+  }
+
+  /* Empty states */
+  .empty-state {
+    @apply flex flex-col items-center justify-center p-8 text-center;
+  }
+
+  .empty-state-icon {
+    @apply w-16 h-16 text-text-muted mb-4;
+  }
+
+  .empty-state-title {
+    @apply text-lg font-medium text-text-primary mb-2;
+  }
+
+  .empty-state-description {
+    @apply text-sm text-text-muted mb-4;
+  }
+
+  /* Loading states */
+  .skeleton {
+    @apply animate-pulse bg-surface-2 rounded;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply flex items-center gap-2 px-4 py-3 min-h-[48px] text-sm font-medium rounded-md;
+    @apply text-text-secondary hover:bg-surface-1 hover:text-text-primary;
+    @apply transition-colors;
+  }
+
+  .nav-link-active {
+    @apply bg-brand-primary/10 text-brand-primary;
+  }
+
+  /* Dropdown */
+  .dropdown-menu {
+    @apply absolute z-50 mt-1 py-1 bg-white border border-surface-2 rounded-lg shadow-lg;
+  }
+
+  .dropdown-item {
+    @apply flex items-center gap-2 px-4 py-2.5 min-h-[48px] text-sm text-text-primary;
+    @apply hover:bg-surface-1 cursor-pointer;
+    @apply transition-colors;
+  }
+
+  /* Dialog/Modal */
+  .dialog-overlay {
+    @apply fixed inset-0 bg-black/50 z-50;
+  }
+
+  .dialog-content {
+    @apply fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2;
+    @apply w-full max-w-md p-6 bg-white rounded-xl shadow-xl z-50;
+  }
+
+  /* Toast */
+  .toast {
+    @apply fixed bottom-4 right-4 z-50 p-4 bg-white rounded-lg shadow-lg border border-surface-2;
+  }
+}
+
+@layer utilities {
+  /* Typography utilities */
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
+  .font-sans {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  }
+
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-2) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-surface-2 rounded;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-muted;
+  }
+
+  /* Animation */
+  .animate-in {
+    animation: animateIn 0.3s ease-out;
+  }
+
+  @keyframes animateIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

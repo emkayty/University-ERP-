@@ -1,0 +1,127 @@
+[project]
+name = "university-mis"
+version = "0.1.0"
+description = "Nigerian University Management Information System (UMIS)"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    {name = "University MIS Team", email = "ict@umis.edu.ng"}
+]
+
+[dependency-groups]
+dev = [
+    "pytest-django>=4.9.0",
+    "pytest-cov>=6.0.0",
+    "factory-boy>=3.3.0",
+    "faker>=30.0.0",
+    "ruff>=0.8.0",
+    "mypy>=1.14.0",
+    "django-stubs>=4.2.0",
+]
+test = [
+    "pytest>=8.3.0",
+    "pytest-django>=4.9.0",
+    "pytest-cov>=6.0.0",
+    "factory-boy>=3.3.0",
+    "faker>=30.0.0",
+]
+
+[project.optional-dependencies]
+# Core Django dependencies
+core = [
+    "django>=5.1.0,<5.2.0",
+    "djangorestframework>=3.15.0,<4.0.0",
+    "django-ninja>=1.1.0",
+    "djangorestframework-simplejwt>=5.3.0",
+    "django-tenants>=3.0.0,<3.11.0",
+    "django-simple-history>=3.7.0",
+    "django-fsm>=3.0.0",
+    "django-filter>=24.0.0",
+    "django-cors-headers>=4.4.0",
+    "django-storages>=1.14.0,<2.0.0",
+    "boto3>=1.35.0",
+]
+
+# Database
+db = [
+    "psycopg[binary]>=3.2.0,<3.3.0",
+    "pgvector>=0.3.0,<0.4.0",
+]
+
+# Async
+async = [
+    "celery[redis]>=5.4.0,<5.5.0",
+    "redis>=5.2.0,<6.0.0",
+    "channels[daphne]>=4.2.0,<5.0.0",
+    "channels-redis>=4.2.0,<5.0.0",
+    "django-celery-beat>=2.7.0,<3.0.0",
+]
+
+# Documents
+docs = [
+    "reportlab>=4.2.0,<5.0.0",
+    "Pillow>=10.4.0,<11.0.0",
+    "weasyprint>=62.0.0,<63.0.0",
+    "openpyxl>=3.1.0,<4.0.0",
+    "pandas>=2.2.0,<3.0.0",
+]
+
+# Email/SMS
+notifications = [
+    "django-anymail[sendgrid]>=11.0.0,<12.0.0",
+]
+
+# Security
+security = [
+    "cryptography>=44.0.0,<45.0.0",
+    "python-decouple>=3.8.0,<4.0.0",
+]
+
+# Monitoring
+monitoring = [
+    "sentry-sdk[django]>=2.0.0,<3.0.0",
+    "prometheus-client>=0.21.0,<1.0.0",
+    "flower>=2.0.0,<3.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+plugins = ["django_stubs.plugin"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.development"
+python_files = ["test_*.py", "*_test.py"]
+testpaths = ["tests"]
+addopts = "--strict-markers --tb=short"
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
