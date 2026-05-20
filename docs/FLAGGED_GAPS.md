@@ -16,8 +16,8 @@
 ### Known Gaps to Address
 
 **CRITICAL:**
-- No K3s manifests - needs infrastructure setup
-- No Ansible playbooks
+- ✅ K3s manifests (deployment, database, ingress) - needs infrastructure setup
+- ✅ Ansible playbooks (deploy)
 
 **HIGH:**
 - User role is single-field only - multi-role not supported  
@@ -25,7 +25,7 @@
 - JAMB CAPS integration is skeleton only
 
 **MEDIUM:**
-- No Prometheus/Grafana configs in repo
+- ✅ Prometheus/Grafana configs added in repo
 - NDPA consent capture models not implemented
 
 ---
