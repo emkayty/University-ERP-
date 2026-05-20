@@ -262,3 +262,31 @@ class PaymentReconciliation(BaseModel):
 
     def __str__(self) -> str:
         return f"Reconciliation {self.id}"
+
+class PaymentIdempotency(BaseModel):
+    """
+    Idempotency tracking for payment webhooks.
+    Prevents duplicate processing of webhook calls.
+    
+    CRITICAL: This table ensures every webhook is processed
+    exactly once, preventing double-charging and
+    duplicate invoices.
+    """
+    webhook_id = models.CharField(max_length=100, unique=True)
+    payment = models.ForeignKey(
+        Payment,
+        on_delete=models.CASCADE,
+        related_name="idempotency_records",
+    )
+    processed_at = models.DateTimeField(auto_now_add=True)
+    response_data = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        db_table = "finance_payment_idempotency"
+        indexes = [
+            models.Index(fields=["webhook_id"]),
+            models.Index(fields=["processed_at"]),
+        ]
+    
+    def __str__(self) -> str:
+        return f"Idempotency {self.webhook_id}"
